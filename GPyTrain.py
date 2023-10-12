@@ -5,7 +5,7 @@ import GPy
 import numpy as np
 
 
-def showData(df: pl.DataFrame):
+def showData(df: pl.DataFrame, X: np.ndarray, Y: np.ndarray):
     # 概要を表示
     print(df.columns)
     print(df.describe())
@@ -14,7 +14,7 @@ def showData(df: pl.DataFrame):
     dfds = df[::100]
     sns.set()
 
-    fig, axes = plt.subplots(2, 3, figsize=(50, 50))
+    _, axes = plt.subplots(2, 3, figsize=(50, 50))
     axes = axes.ravel()
     sns.lineplot(x="ET", y="TSTM", data=dfds, ax=axes[0])
     sns.scatterplot(x="SA", y="FY", data=dfds, ax=axes[1])
@@ -22,6 +22,7 @@ def showData(df: pl.DataFrame):
     sns.scatterplot(x="FZ", y="FY", data=dfds, ax=axes[3])
     sns.scatterplot(x="P", y="FY", data=dfds, ax=axes[4])
     sns.scatterplot(x="IA", y="FY", data=dfds, ax=axes[5])
+    sns.lineplot(X, Y, ax=axes[1])
 
     plt.show()
 
@@ -77,10 +78,17 @@ points = np.stack(
 ).reshape([-1, 4])
 print(points.shape)
 
-# exit()
 
 kernel = GPy.kern.RBF(4)
 m_sparse = GPy.models.SparseGPRegression(X, Y, kernel, Z=points)
 m_sparse.optimize()
-m_sparse.save_model("output.dat")
 print(m_sparse.log_likelihood())
+
+# 予測点の作成
+psa = np.concatenate([np.linspace(-15, 15, 100).reshape(100, 1), np.zeros((100, 3))], 1)
+other = np.array([0, 0, 645, 77])
+newPoints = psa + other
+
+preY, sigma = m_sparse.predict(newPoints)
+
+showData(df, np.linspace(-15, 15, 100), preY)

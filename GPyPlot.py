@@ -50,34 +50,10 @@ invFZ = pl.col("FZ") * -1
 # タイヤ温度が平均して50℃以下のデータ捨てる
 df = df.with_columns(meanTemp, invFZ).filter(pl.col("TSTM") > 50)
 
+
 # showData(df)
 
-# SA IA FZ P FYを取得
-X = df.select("SA", "IA", "FZ", "P")
-Y = df.select("FY")
-print(X.describe())
-print(Y.describe())
-X = X.to_numpy()
-Y = Y.to_numpy()
-print(X.shape)
-print(Y.shape)
-# showData(df)
 
-# 格子点を作成
-points = np.stack(
-    np.meshgrid(
-        np.linspace(-15, 15, 10),  # SA
-        np.arange(5),  # IA
-        np.linspace(0, 1500, 10),  # FZ
-        np.linspace(40, 110, 6),  # P
-    ),
-    axis=-1,
-).reshape([-1, 4])
-print(points.shape)
-
-# exit()
-
-kernel = GPy.kern.RBF(4)
-m_sparse = GPy.models.SparseGPRegression(X, Y, kernel, Z=points)
-m_sparse.optimize()
-m_sparse.plot()
+m_sparse = GPy.models.SparseGPRegression()
+m_sparse.load_model("output.dat")
+m_sparse.p

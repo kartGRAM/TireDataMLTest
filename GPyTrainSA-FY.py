@@ -25,8 +25,13 @@ def showData(
     sns.scatterplot(x="FZ", y="FY", data=dfds, ax=axes[3])
     sns.scatterplot(x="P", y="FY", data=dfds, ax=axes[4])
     sns.scatterplot(x="IA", y="FY", data=dfds, ax=axes[5])
-    if X and Y:
-        sns.lineplot(X, Y, ax=axes[1])
+    if X is not None and Y is not None:
+        df = pl.from_numpy(
+            np.concatenate([X, Y], axis=1),
+            schema=["SA", "FY-pred"],
+            orient="row",
+        )
+        sns.lineplot(x="SA", y="FY-pred", data=df, ax=axes[1])
 
     plt.show()
 
@@ -64,13 +69,13 @@ df = (
     .filter(pl.col("FZ") < 300)
 )
 
-showData(df)
-exit()
-df = df[::30]
+# showData(df)
+# exit()
+# df = df[::30]
 
 
 # SA IA FZ P FYを取得
-X = df.select("SA", "IA", "FZ", "P")
+X = df.select("SA")
 Y = df.select("FY")
 print(X.describe())
 print(Y.describe())
@@ -81,30 +86,21 @@ print(Y.shape)
 # showData(df)
 
 # 格子点を作成
-points = np.stack(
-    np.meshgrid(
-        np.linspace(-15, 15, 5),  # SA
-        np.arange(5),  # IA
-        np.linspace(0, 1500, 5),  # FZ
-        np.linspace(40, 110, 5),  # P
-    ),
-    axis=-1,
-).reshape([-1, 4])
+points = np.linspace(-15, 15, 21).reshape([-1, 1])
 print(points.shape)
 
 
-kernel = GPy.kern.RBF(4)
+kernel = GPy.kern.RBF(1)
 m_sparse = GPy.models.SparseGPRegression(X, Y, kernel, Z=points)
 m_sparse.optimize()
+# m_sparse.plot()
+# plt.show()
+# plt.savefig('hoge.png')
 print(m_sparse.log_likelihood())
 
 # 予測点の作成
-psa = np.concatenate(
-    [np.linspace(-15, 15, 100).reshape(100, 1), np.zeros((100, 3))], 1
-)
-other = np.array([0, 0, 645, 77])
-newPoints = psa + other
+newPoints = np.linspace(-15, 15, 100).reshape([-1, 1])
 
 preY, sigma = m_sparse.predict(newPoints)
 
-showData(df, np.linspace(-15, 15, 100), preY)
+showData(df, np.linspace(-15, 15, 100).reshape([-1, 1]), preY)

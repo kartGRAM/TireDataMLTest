@@ -87,8 +87,8 @@ df = (
 
 
 # SA IA FZ P FYを取得
-X = df.select("SA", "FZ", "P")
-Y = df.select("FY")
+X = df.select("SA", "FZ", "P")[::10]
+Y = df.select("FY")[::10]
 print(X.describe())
 print(Y.describe())
 X = X.to_numpy()
@@ -106,15 +106,15 @@ print(Y.shape)
 # plt.show()
 # exit()
 
-axes = showData(df, 10)
+axes = showData(df, 1)
 
 # 回帰曲線の作成
 # 格子点を作成
 points = np.stack(
     np.meshgrid(
         np.linspace(-2, 2, 21),  # SA
-        np.linspace(-2, 2, 5),  # FZ
-        np.linspace(-2, 2, 5),  # P
+        np.linspace(-2, 2, 10),  # FZ
+        np.linspace(-2, 2, 10),  # P
     ),
     axis=-1,
 ).reshape([-1, 3])
@@ -122,20 +122,23 @@ print(points.shape)
 
 
 kernel = GPy.kern.RBF(3) + GPy.kern.White(3) + GPy.kern.Bias(3)
-# m_sparse = GPy.models.SparseGPRegression(X, Y, kernel, Z=points)
-m_sparse = GPy.models.GPRegression(X, Y, kernel)
+m_sparse = GPy.models.SparseGPRegression(X, Y, kernel, Z=points)
+# _sparse = GPy.models.GPRegression(X, Y, kernel)
 # m_sparse.optimize(messages=True)
 print(m_sparse.log_likelihood())
 
 for fyLb in [50, 75, 100, 150, 250, 350]:
-    # 予測点の作成
-    xPred = np.array(
-        [
-            np.linspace(-2, 2, 100),
-            (np.full(100, lbToN(fyLb) - Xmean[1]) / Xstd[1]),
-            (np.full(100, psiToKPa(12) - Xmean[2]) / Xstd[2]),
-        ]
-    ).T
+    # SA-FY予測の作成
+    xPred = (
+        np.array(
+            [
+                np.linspace(-14, 14, 100),
+                np.full(100, lbToN(fyLb)),
+                np.full(100, psiToKPa(12)),
+            ]
+        ).T
+        - Xmean
+    ) / Xstd
 
     yPred, sigma = m_sparse.predict(xPred)
     yPred = yPred * Ystd + Ymean
@@ -143,17 +146,36 @@ for fyLb in [50, 75, 100, 150, 250, 350]:
         axes, 1, (xPred[:, 0] * Xstd[0] + Xmean[0]).reshape([-1, 1]), yPred
     )
 
-# FY予測点の作成
-xPred = np.array(
-    [
-        np.full(100, -2),
-        (np.linspace(0, lbToN(350), 100) - Xmean[1]) / Xstd[1],
-        (np.full(100, psiToKPa(12) - Xmean[2]) / Xstd[2]),
-    ]
-).T
+# FZ-FY予測の作成
+xPred = (
+    np.array(
+        [
+            np.full(100, -12),
+            np.linspace(0, lbToN(350), 100),
+            np.full(100, psiToKPa(12)),
+        ]
+    ).T
+    - Xmean
+) / Xstd
 yPred, sigma = m_sparse.predict(xPred)
 yPred = yPred * Ystd + Ymean
 showPred(axes, 3, np.linspace(0, lbToN(350), 100).reshape([-1, 1]), yPred)
 
+# P-FY予測の作成
+xPred = (
+    np.array(
+        [
+            np.full(100, -12),
+            np.full(100, 1100),
+            np.linspace(psiToKPa(7), psiToKPa(15), 100),
+        ]
+    ).T
+    - Xmean
+) / Xstd
+yPred, sigma = m_sparse.predict(xPred)
+yPred = yPred * Ystd + Ymean
+showPred(
+    axes, 4, np.linspace(psiToKPa(7), psiToKPa(15), 100).reshape([-1, 1]), yPred
+)
 
 plt.show()

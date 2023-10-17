@@ -55,13 +55,13 @@ def psiToKPa(psi: float):
 df = pl.concat(
     [
         pl.read_csv(
-            "TireData/Hoosier-LC0-Rim7/CorneringTest1.dat",
+            "TireData/TestData/CorneringTest1.dat",
             skip_rows=1,
             skip_rows_after_header=1,
             separator="\t",
         ),
         pl.read_csv(
-            "TireData/Hoosier-LC0-Rim7/CorneringTest2.dat",
+            "TireData/TestData/CorneringTest2.dat",
             skip_rows=1,
             skip_rows_after_header=1,
             separator="\t",
@@ -75,10 +75,10 @@ meanTemp = ((pl.col("TSTC") + pl.col("TSTI") + pl.col("TSTO")) / 3).alias(
 )
 # 輪荷重は鉛直下向きが負なので、鉛直下向きを正にしてしまう
 invFZ = pl.col("FZ") * -1
-# タイヤ温度が平均して50℃以下のデータ捨てる
+# タイヤ温度が平均して50℃以下のデータはウォームアップが足りてないと判断して捨てる
 df = df.with_columns(meanTemp, invFZ).filter(pl.col("TSTM") > 50)
 
-# テスト用
+# 必要なデータを抽出
 df = (
     df.filter(pl.col("IA") < 0.5)
     # .filter(pl.col("P") < 60)
@@ -86,7 +86,7 @@ df = (
 )
 
 
-# SA IA FZ P FYを取得
+# SA IA FZ P FYを取得データ点数が多いと計算できないので適当に間引く（4000点くらい?）
 X = df.select("SA", "FZ", "P")[::10]
 Y = df.select("FY")[::10]
 print(X.describe())
@@ -97,22 +97,26 @@ Xmean = X.mean(axis=0)
 Xstd = X.std(axis=0)
 Ymean = Y.mean()
 Ystd = Y.std()
-X = (X - Xmean) / Xstd
+
+
+# 正規化する
+def normalizeX(X: np.ndarray):
+    return (X - Xmean) / Xstd
+
+
+X = normalizeX(X)
 Y = (Y - Ymean) / Ystd
 
 print(X.shape)
 print(Y.shape)
-# showData(df)
-# plt.show()
-# exit()
 
 axes = showData(df, 1)
 
-# 回帰曲線の作成
-# 格子点を作成
+# 回帰曲線を求める
+# 補助点を作成
 points = np.stack(
     np.meshgrid(
-        np.linspace(-2, 2, 21),  # SA
+        np.linspace(-2, 2, 21),  # SAは点数多めじゃないとうまく表現できなかった
         np.linspace(-2, 2, 10),  # FZ
         np.linspace(-2, 2, 10),  # P
     ),
@@ -120,16 +124,20 @@ points = np.stack(
 ).reshape([-1, 3])
 print(points.shape)
 
-
+# バイアスはたぶん入れたほうがいい感じになる。
 kernel = GPy.kern.RBF(3) + GPy.kern.White(3) + GPy.kern.Bias(3)
+
+# データの点数が多い場合はこちらのほうが速いらしい。
 m_sparse = GPy.models.SparseGPRegression(X, Y, kernel, Z=points)
+# 　こっちを使う場合は通常のガウス過程回帰
 # _sparse = GPy.models.GPRegression(X, Y, kernel)
-# m_sparse.optimize(messages=True)
-print(m_sparse.log_likelihood())
+
+# カーネルのハイパーパラメータを最適化(やらなくてもよい)
+m_sparse.optimize(messages=True)
 
 for fyLb in [50, 75, 100, 150, 250, 350]:
     # SA-FY予測の作成
-    xPred = (
+    xPred = normalizeX(
         np.array(
             [
                 np.linspace(-14, 14, 100),
@@ -137,8 +145,7 @@ for fyLb in [50, 75, 100, 150, 250, 350]:
                 np.full(100, psiToKPa(12)),
             ]
         ).T
-        - Xmean
-    ) / Xstd
+    )
 
     yPred, sigma = m_sparse.predict(xPred)
     yPred = yPred * Ystd + Ymean
@@ -147,7 +154,7 @@ for fyLb in [50, 75, 100, 150, 250, 350]:
     )
 
 # FZ-FY予測の作成
-xPred = (
+xPred = normalizeX(
     np.array(
         [
             np.full(100, -12),
@@ -155,14 +162,13 @@ xPred = (
             np.full(100, psiToKPa(12)),
         ]
     ).T
-    - Xmean
-) / Xstd
+)
 yPred, sigma = m_sparse.predict(xPred)
 yPred = yPred * Ystd + Ymean
 showPred(axes, 3, np.linspace(0, lbToN(350), 100).reshape([-1, 1]), yPred)
 
 # P-FY予測の作成
-xPred = (
+xPred = normalizeX(
     np.array(
         [
             np.full(100, -12),
@@ -170,8 +176,7 @@ xPred = (
             np.linspace(psiToKPa(7), psiToKPa(15), 100),
         ]
     ).T
-    - Xmean
-) / Xstd
+)
 yPred, sigma = m_sparse.predict(xPred)
 yPred = yPred * Ystd + Ymean
 showPred(

@@ -1,0 +1,145 @@
+{
+    "kite.showWelcomeNotificationOnStartup": false,
+    //"python.pythonPath": "C:\\Users\\ayama\\Desktop\\achuaya\\AchuayaScreening\\AchuayaScreening\\bin\\x64\\Debug\\Python",
+    "vim.autoSwitchInputMethod.enable": true,
+    "vim.autoSwitchInputMethod.defaultIM": "0",
+    "vim.autoSwitchInputMethod.obtainIMCmd": "C:\\zenhan.exe 0",
+    "vim.autoSwitchInputMethod.switchIMCmd": "C:\\zenhan.exe {im}",
+    // システムのclipboardにコピー
+    "vim.useSystemClipboard": true,
+    // 検索に:を入れる
+    "vim.cmdLineInitialColon": true,
+    "vim.hlsearch": true,
+    // 言わずもがなeasymotion
+    "vim.easymotion": true,
+    // カーソル上にあるワードを"*"で検索
+    "vim.visualstar": true,
+    // 諸々のctrlキーを使った操作が有効になる
+    "vim.useCtrlKeys": false,
+    "vim.foldfix": true,
+    "vim.normalModeKeyBindings": [
+        {
+            "before": [
+                "s"
+            ],
+            "after": [
+                "<leader>",
+                "<leader>",
+                "2",
+                "s",
+                "<char>",
+                "<char>"
+            ]
+        }
+    ],
+    "vim.statusBarColorControl": false,
+    "workbench.editor.enablePreview": false,
+    "diffEditor.renderSideBySide": false, // Git の差分を行内に表示
+    "emmet.showSuggestionsAsSnippets": true, // Emmet の候補を表示
+    "emmet.triggerExpansionOnTab": true, // TAB キーで Emmet を展開できるようにする
+    "emmet.variables": { // Emmet で展開される HTML の言語を変更
+        "lang": "ja"
+    },
+    "explorer.confirmDelete": false, // ファイル削除時の確認を表示しない
+    "files.associations": { // ファイルと言語の関連付けを変更
+        ".*lintrc": "json"
+    },
+    "files.exclude": { // エクスプローラーから非表示にするファイル
+        "**/*.map": true,
+        "**/node_modules": true
+    },
+    "files.insertFinalNewline": true, // ファイルの保存時に末尾を改行
+    "files.trimFinalNewlines": true, // ファイルの保存時に最終行以降をトリミング
+    "files.trimTrailingWhitespace": true, // ファイルの保存時に行末の空白をトリミング
+    "[markdown]": {
+        "files.trimTrailingWhitespace": false // Markdown のファイルは行末の空白をトリミングしない
+    },
+    "html.format.contentUnformatted": "pre, code, textarea, title, h1, h2, h3, h4, h5, h6, p", // タグ内の記述はフォーマットしない
+    "html.format.extraLiners": "", // head, body, /html タグの前に改行を入れない
+    "html.format.unformatted": null, // フレージング・コンテンツ（旧インライン要素のようなタグ）はフォーマットしない
+    "html.format.wrapLineLength": 0, // 行の文字数制限を無くし自動で改行させない
+    "search.exclude": {
+        "**/public": true,
+        "**/static": true,
+        "**/tmp": true
+    },
+    "window.openFoldersInNewWindow": "on", // 新規ワークスペースを別ウインドウで開く
+    "window.title": "${activeEditorMedium}${separator}${rootName}", // ウインドウ上部に表示する文字列の設定
+    "workbench.editor.labelFormat": "short", // タブに表示する文字列の設定
+    "workbench.editor.tabSizing": "shrink",
+    "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "workbench.iconTheme": "vscode-icons",
+    "terminal.integrated.fontSize": 12,
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/.rvm/**": true,
+        "**/node_modules/**": true,
+        "**/Library/**": true,
+        "**/GoogleDrive/**": true,
+        "**/Dropbox/**": true,
+        "**/.cocoapods/**": true,
+        "**/Pictures/**": true,
+        "**/TempData/**": true,
+    },
+    "diffEditor.ignoreTrimWhitespace": true,
+    "vsicons.dontShowNewVersionMessage": true,
+    "workbench.editorAssociations": {
+        "*.ipynb": "jupyter-notebook"
+    },
+    "window.zoomLevel": 1,
+    "python.defaultInterpreterPath": "C:\\Users\\ayama\\Anaconda3\\envs\\py38\\python.exe",
+    "notebook.cellToolbarLocation": {
+        "default": "right",
+        "jupyter-notebook": "left"
+    },
+    "git.autofetch": true,
+
+    "editor.colorDecorators": false, // カラーデコレーターを非表示
+    "editor.multiCursorModifier": "ctrlCmd", // マウスでの複数選択時の修飾キーを変更
+    "editor.renderControlCharacters": true, // 制御文字を表示
+    "editor.renderLineHighlight": "all", // 選択行を行番号含めすべてハイライト
+    "editor.renderWhitespace": "all", // 半角スペースを常に表示
+    "editor.snippetSuggestions": "top", // タブのサイズ変更
+    "editor.wordWrap": "off", // エディターの幅で折り返し
+    "editor.quickSuggestions": {
+        "comments": "off",
+        "strings": "off",
+        "other": "off"
+    },
+    "editor.rulers": [
+        80
+    ],
+    "editor.fontSize": 13,
+    "editor.minimap.enabled": false,
+    "editor.autoClosingBrackets": "never",
+    "editor.autoClosingOvertype": "always",
+    "editor.autoClosingQuotes": "never", // タブの表示設定
+    "[typescript, typescriptreact]": {
+        "editor.tabSize": 2,
+        "editor.formatOnSave": true,
+        "editor.formatOnType": true,
+        "editor.formatOnPaste": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.eslint": true, // eslintでリント
+        },
+    },
+    "[python]": {
+        "editor.tabSize": 4,
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.insertSpaces": true,
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnType": true,
+    },
+    "black-formatter.args": ["--line-length", "80"],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true, // eslintでリント
+    },
+    "npm.keybindingsChangedWarningShown": true,
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "workbench.panel.defaultLocation": "right",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "security.workspace.trust.untrustedFiles": "open"
+}
